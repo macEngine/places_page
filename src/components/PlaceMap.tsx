@@ -16,9 +16,11 @@ interface Props {
   places: readonly Place[];
   focused: Place | null;
   onFocus: (place: Place) => void;
+  /** Bump to re-fit the view to all visible places (the "Fit" button). */
+  fitKey?: number;
 }
 
-export default function PlaceMap({ places, focused, onFocus }: Props) {
+export default function PlaceMap({ places, focused, onFocus, fitKey }: Props) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markers = useRef<maplibregl.Marker[]>([]);
@@ -30,7 +32,7 @@ export default function PlaceMap({ places, focused, onFocus }: Props) {
       style: STYLE_URL,
       center: [116.4, 39.9],
       zoom: 3,
-      attributionControl: { compact: true },
+      attributionControl: false,
     });
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }));
     map.current = m;
@@ -81,8 +83,8 @@ export default function PlaceMap({ places, focused, onFocus }: Props) {
       (b, p) => b.extend(p.wgs84),
       new maplibregl.LngLatBounds(places[0].wgs84, places[0].wgs84)
     );
-    m.fitBounds(bounds as LngLatBoundsLike, { padding: 60, maxZoom: 13 });
-  }, [places, focused]);
+    m.fitBounds(bounds as LngLatBoundsLike, { padding: 40, maxZoom: 13 });
+  }, [places, focused, fitKey]);
 
   return <div ref={container} className="map" />;
 }
