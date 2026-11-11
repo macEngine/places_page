@@ -26,6 +26,8 @@ export interface Place {
   link?: string;
   /** Short description. Searchable. */
   desc?: string;
+  /** Date the record was added, YYYY-MM-DD. Drives "latest" and the log order. */
+  added?: string;
   /** Where the record came from; kept for provenance, ignored by the UI. */
   _source?: unknown;
 }
@@ -100,8 +102,31 @@ export function sanitizePlaces(raw: unknown): Place[] {
     if (link) place.link = link;
     const desc = optionalString(entry.desc);
     if (desc) place.desc = desc;
+    const added = optionalString(entry.added);
+    if (added && /^\d{4}-\d{2}-\d{2}$/.test(added)) place.added = added;
     if (entry._source !== undefined) place._source = entry._source;
     out.push(place);
   }
   return out;
+}
+
+/**
+ * Newest first by `added`; records without a date sort last and keep file
+ * order among themselves, so a new row appended to places.json still shows
+ * up near the top even if the date was forgotten.
+ */
+export function sortByAddedDesc(places: readonly Place[]): Place[] {
+  return places
+    .map((p, i) => ({ p, i }))
+    .sort((a, b) => {
+      const da = a.p.added ?? '';
+      const db = b.p.added ?? '';
+      if (da !== db) return db.localeCompare(da);
+      return b.i - a.i;
+    })
+    .map(({ p }) => p);
+}
+
+export function placeKey(p: Place): string {
+  return `${p.name}@${p.wgs84[0]},${p.wgs84[1]}`;
 }

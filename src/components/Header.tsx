@@ -1,19 +1,32 @@
 import type { ThemeMode } from '@/core/theme';
+import { hrefFor } from '@/core/router';
 
 interface Props {
   theme: ThemeMode;
   onToggleTheme: () => void;
+  active: 'home' | 'wall';
 }
 
-export default function Header({ theme, onToggleTheme }: Props) {
+export default function Header({ theme, onToggleTheme, active }: Props) {
   return (
     <header className="header">
       <div className="header__inner">
-        <div className="brand">
+        <a className="brand" href={hrefFor({ page: 'home' })}>
           PLACES<span className="brand__dot">.</span>PAGE
-        </div>
+        </a>
         <nav className="header__nav">
-          <span className="header__link">Places</span>
+          <a
+            className={'header__link' + (active === 'home' ? ' header__link--active' : '')}
+            href={hrefFor({ page: 'home' })}
+          >
+            Home
+          </a>
+          <a
+            className={'header__link' + (active === 'wall' ? ' header__link--active' : '')}
+            href={hrefFor({ page: 'wall' })}
+          >
+            Wall
+          </a>
           <button
             type="button"
             className="icon-btn"

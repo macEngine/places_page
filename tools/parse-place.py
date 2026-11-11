@@ -243,6 +243,7 @@ def parse(pasted, source=None):
         "zoom": zoom,
         "country": None, "province": None, "city": None,
         "tags": [], "link": None, "desc": None,
+        "added": None,   # YYYY-MM-DD, filled by main() (today) unless --added given
         "_source": {
             "provider": src,
             "projection": projected,
@@ -338,6 +339,7 @@ def main():
     ap.add_argument("--country"); ap.add_argument("--province"); ap.add_argument("--city")
     ap.add_argument("--tags", nargs="*", default=[])
     ap.add_argument("--link"); ap.add_argument("--desc")
+    ap.add_argument("--added", help="date added, YYYY-MM-DD (default: today)")
     ap.add_argument("--selftest", action="store_true")
     a = ap.parse_args()
 
@@ -351,6 +353,8 @@ def main():
         if getattr(a, k) is not None:
             rec[k] = getattr(a, k)
     rec["tags"] = a.tags
+    import datetime as _dt
+    rec["added"] = a.added or _dt.date.today().isoformat()
     print(json.dumps(rec, ensure_ascii=False, indent=2))
 
 

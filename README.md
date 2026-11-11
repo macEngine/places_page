@@ -2,7 +2,9 @@
 
 A personal page of places I have been to — the [running_page](https://github.com/yihong0618/running_page) idea, but for places instead of runs.
 
-- Each place has **tags** (many), an optional **link** and a short **description**.
+- **Home** — stat cards plus a *Place Log* table (newest first, 16 per page) mirroring running_page's Run Log; click a row to open it on the Wall.
+- **Wall** — the Track Wall layout: detail card (defaults to the most recently added place), map, geo tabs, search, tag pills and a wall of circles carrying place names.
+- Each place has **tags** (many), an optional **link**, a short **description** and an **added** date.
 - **Tabs** drill down by geography: country → province → city (empty levels are skipped; municipalities like 北京 collapse to one row).
 - **Search** works like running_page's tag search: space-separated terms are AND-ed, matched case-insensitively as substrings against name / tags / description. Tag pills are hard filters and are computed from the geographic scope, not from the search result, so they stay clickable.
 

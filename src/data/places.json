@@ -23,6 +23,7 @@
     ],
     "link": null,
     "desc": "港式茶餐厅，北京首店",
+    "added": "2026-11-11",
     "_source": {
       "provider": "baidu",
       "projection": "bd09mc",
