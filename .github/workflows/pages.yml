@@ -33,6 +33,10 @@ jobs:
           # Project site lives at https://<owner>.github.io/<repo>/
           VITE_BASE: /${{ github.event.repository.name }}/
       - uses: actions/configure-pages@v5
+        with:
+          # First run on a fresh repo: turn Pages on (source = GitHub Actions)
+          # instead of requiring a manual Settings -> Pages click.
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
