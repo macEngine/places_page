@@ -33,5 +33,43 @@
         "gcj02": 544.5
       }
     }
+  },
+  {
+    "name": "那尖儿面馆(阜成门店)",
+    "wgs84": [
+      116.35594,
+      39.922654
+    ],
+    "gcj02": [
+      116.362137,
+      39.924017
+    ],
+    "bd09": [
+      116.368667,
+      39.929871
+    ],
+    "zoom": 17.0,
+    "country": "中国",
+    "province": "北京",
+    "city": "北京",
+    "tags": [
+      "北京",
+      "美食",
+      "马未都"
+    ],
+    "link": "https://my.feishu.cn/wiki/PLDbwyqNdiXX7kk77vhcugPPnXe",
+    "desc": "阜成门内大街201号",
+    "added": "2026-11-12",
+    "_source": {
+      "provider": "baidu",
+      "projection": "bd09mc",
+      "poi_uid": "5584a7b84e7b1dd4a6da39cc",
+      "raw": "https://map.baidu.com/?qt=inf&uid=5584a7b84e7b1dd4a6da39cc",
+      "offset_from_wgs84_m": {
+        "bd09": 1349.7,
+        "gcj02": 549.7
+      },
+      "note": "coords from POI detail API (search URL center was ~1km off)"
+    }
   }
 ]
