@@ -163,7 +163,29 @@ def haversine_m(lat1, lon1, lat2, lon2):
 
 # ---------------------------------------------------------------------- parsing
 COORD_RE = re.compile(r"@\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)(?:\s*,\s*(\d+(?:\.\d+)?)z)?")
-UID_RE = re.compile(r"[?&]uid=([0-9a-zA-Z]+)")
+UID_RE = re.compile(r"[?&](?:uid|sug_forward)=([0-9a-fA-F]{24})")
+
+
+def baidu_poi_lookup(uid):
+    """Ask Baidu's POI detail endpoint for the exact BD09MC point of a POI.
+
+    Needed for /search/ share URLs: there the '@a,b' is the map *center*, which
+    can be ~1 km away from the shop. /poi/ URLs already carry the POI point.
+    Returns (x, y, name, addr) or None on any failure (offline, unknown uid).
+    """
+    import urllib.request
+    try:
+        with urllib.request.urlopen(
+                f"https://map.baidu.com/?qt=inf&uid={uid}", timeout=8) as r:
+            d = json.load(r)
+        c = d.get("content") or {}
+        geo = c.get("geo") or ""
+        # geo looks like "1|x,y;x,y|x,y;" -> take the last pair
+        pair = geo.split("|")[-1].rstrip(";").split(";")[-1]
+        x, y = (float(v) for v in pair.split(","))
+        return x, y, c.get("name"), c.get("addr")
+    except Exception:
+        return None
 SOURCES = ("baidu", "amap", "wgs84")
 
 
@@ -207,6 +229,21 @@ def parse(pasted, source=None):
     zoom = float(m.group(3)) if m.group(3) else None
     name = extract_name(pasted, m.start())
     uid = UID_RE.search(pasted).group(1) if UID_RE.search(pasted) else None
+    coord_origin = "url"
+
+    # Baidu /search/ share links: '@a,b' is the viewport center, not the POI.
+    # Resolve the POI uid to its real point when we can.
+    if src == "baidu" and uid and "/search/" in pasted:
+        hit = baidu_poi_lookup(uid)
+        if hit:
+            a, b = hit[0], hit[1]
+            if hit[2]:
+                name = hit[2]
+            coord_origin = "baidu_poi_api"
+        else:
+            coord_origin = "url_center_UNVERIFIED"
+            print(f"WARNING: /search/ URL -> '@a,b' is the map center, may be ~1 km off; "
+                  f"POI lookup for uid={uid} failed", file=sys.stderr)
 
     degrees = abs(a) <= 90 and abs(b) <= 180
     if degrees:
@@ -248,6 +285,7 @@ def parse(pasted, source=None):
             "provider": src,
             "projection": projected,
             "poi_uid": uid,
+            "coord_origin": coord_origin,
             "raw": pasted,
             "offset_from_wgs84_m": {
                 "bd09": round(haversine_m(*wgs, *bd), 1),
