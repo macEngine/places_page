@@ -1,61 +1,127 @@
-import type { ThemeMode } from '@/core/theme';
-import { hrefFor } from '@/core/router';
+import type { Activity } from '../types';
+import { useLocale } from '../hooks/useLocale';
 
-interface Props {
-  theme: ThemeMode;
-  onToggleTheme: () => void;
-  active: 'home' | 'wall';
+type Page = 'home' | 'tracks' | 'summary';
+
+interface HeaderProps {
+  dark: boolean;
+  toggleTheme: () => void;
+  activities: Activity[];
+  page: Page;
+  onNavigate: (p: Page) => void;
 }
 
-export default function Header({ theme, onToggleTheme, active }: Props) {
+export function Header({ dark, toggleTheme, page, onNavigate }: HeaderProps) {
+  const { locale, setLocale, t } = useLocale();
+
+  const navItems: { label: string; page: Page }[] = [
+    { label: t('home'), page: 'home' },
+    { label: t('tracks'), page: 'tracks' },
+    { label: t('summary'), page: 'summary' },
+  ];
+
   return (
-    <header className="header">
-      <div className="header__inner">
-        <a className="brand" href={hrefFor({ page: 'home' })}>
-          PLACES<span className="brand__dot">.</span>PAGE
-        </a>
-        <nav className="header__nav">
-          <a
-            className={'header__link' + (active === 'home' ? ' header__link--active' : '')}
-            href={hrefFor({ page: 'home' })}
-          >
-            Home
-          </a>
-          <a
-            className={'header__link' + (active === 'wall' ? ' header__link--active' : '')}
-            href={hrefFor({ page: 'wall' })}
-          >
-            Wall
-          </a>
+    <header className="sticky top-0 z-50 border-b border-[var(--color-border)] bg-[var(--color-bg)]/70 backdrop-blur-md">
+      <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        {/* Logo → home */}
+        <button
+          type="button"
+          onClick={() => onNavigate('home')}
+          aria-label={locale === 'zh' ? '回到首页' : 'Go to home'}
+          title={locale === 'zh' ? '回到首页' : 'Go to home'}
+          className="cursor-pointer border-0 bg-transparent p-0 text-xl font-bold text-[var(--color-text)]"
+        >
+          PLACES<span className="text-[var(--color-run)]">.</span>PAGE
+        </button>
+
+        {/* Right nav */}
+        <div className="flex flex-wrap items-center gap-3 sm:gap-6">
+          {navItems.map((item) => (
+            <button
+              aria-current={item.page === page ? 'page' : undefined}
+              type="button"
+              key={item.page}
+              onClick={() => onNavigate(item.page)}
+              className={`cursor-pointer border-0 bg-transparent p-0 text-sm transition-colors ${
+                item.page === page
+                  ? 'font-medium text-[var(--color-accent)]'
+                  : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
           <button
-            type="button"
-            className="icon-btn"
-            onClick={onToggleTheme}
-            title={theme === 'dark' ? '切换到浅色' : '切换到深色'}
+            aria-label={
+              locale === 'zh'
+                ? dark
+                  ? '切换浅色模式'
+                  : '切换深色模式'
+                : dark
+                  ? 'Switch to light mode'
+                  : 'Switch to dark mode'
+            }
+            title={
+              locale === 'zh'
+                ? dark
+                  ? '切换浅色模式'
+                  : '切换深色模式'
+                : dark
+                  ? 'Switch to light mode'
+                  : 'Switch to dark mode'
+            }
+            onClick={toggleTheme}
+            className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[var(--color-card)]"
           >
-            {theme === 'dark' ? (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="4" />
-                <path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+            {dark ? (
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                />
               </svg>
             ) : (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                />
               </svg>
             )}
           </button>
+          <button
+            onClick={() => setLocale(locale === 'zh' ? 'en' : 'zh')}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold text-[var(--color-muted)] transition-colors hover:bg-[var(--color-card)] hover:text-[var(--color-text)]"
+            title={locale === 'zh' ? 'Switch to English' : '切换中文'}
+          >
+            {locale === 'zh' ? 'EN' : '中'}
+          </button>
           <a
-            className="icon-btn"
             href="https://github.com/macEngine/places_page"
             target="_blank"
-            rel="noreferrer noopener"
+            rel="noopener noreferrer"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--color-muted)] transition-colors hover:bg-[var(--color-card)] hover:text-[var(--color-text)]"
             title="GitHub"
           >
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2 0-.4-.5-1.6.2-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.7 1.6.2 2.8.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.1.9 2.3v3.3c0 .3.1.7.8.6A12 12 0 0 0 12 .3z" />
+            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
             </svg>
           </a>
-        </nav>
+        </div>
       </div>
     </header>
   );
