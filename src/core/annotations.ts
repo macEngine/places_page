@@ -5,7 +5,7 @@
  * records (`tags` -> tags, `desc` -> note, `link` -> link), built once and
  * synchronously, so the tracks page tag search and pills work without a fetch.
  */
-import { getPlaces, placeStartDateLocal } from './placesAsActivities';
+import { getPlaces, placeStartDateLocal, sameDaySeq } from './placesAsActivities';
 
 export interface Annotation {
   /** Free-form labels, e.g. ["美食", "港式"]. Searchable. */
@@ -38,8 +38,10 @@ export function sanitizeLink(value: unknown): string {
 
 function build(): AnnotationMap {
   const out: AnnotationMap = {};
-  for (const place of getPlaces()) {
-    const key = placeStartDateLocal(place);
+  const places = getPlaces();
+  const seq = sameDaySeq(places);
+  for (const place of places) {
+    const key = placeStartDateLocal(place, seq.get(place) ?? 0);
     const tags = place.tags ?? [];
     const note = place.desc ?? '';
     const link = sanitizeLink(place.link);

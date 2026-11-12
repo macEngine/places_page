@@ -5,6 +5,7 @@ import {
   getActivityData,
   normalizeProvince,
   placeStartDateLocal,
+  sameDaySeq,
   placeSummaryPolyline,
   placeToActivity,
 } from './placesAsActivities';
@@ -34,6 +35,18 @@ describe('normalizeProvince', () => {
   it('leaves non-China provinces untouched', () => {
     expect(normalizeProvince('東京都', '日本')).toBe('東京都');
     expect(normalizeProvince('California', 'USA')).toBe('California');
+  });
+});
+
+describe('same-day places get distinct keys', () => {
+  it('folds the per-day sequence into the seconds', () => {
+    const a = P({ name: 'a', added: '2026-11-12' });
+    const b = P({ name: 'b', added: '2026-11-12' });
+    const c = P({ name: 'c', added: '2026-11-11' });
+    const seq = sameDaySeq([a, b, c]);
+    expect(placeStartDateLocal(a, seq.get(a))).toBe('2026-11-12 12:00:00');
+    expect(placeStartDateLocal(b, seq.get(b))).toBe('2026-11-12 12:00:01');
+    expect(placeStartDateLocal(c, seq.get(c))).toBe('2026-11-11 12:00:00');
   });
 });
 

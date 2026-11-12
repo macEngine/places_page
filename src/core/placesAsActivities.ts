@@ -13,15 +13,33 @@ const MUNICIPALITIES = new Set(['北京', '上海', '天津', '重庆']);
 const SUFFIXED = /(省|市|自治区|特别行政区)$/;
 
 /**
- * running_page keys per-activity data on `start_date_local`; a place carries
- * only a date, so noon local time gives it a stable timestamp key.
+ * running_page keys per-activity data (selection, annotations, heatmap chips)
+ * on `start_date_local`, so the key MUST be unique per place. A place only
+ * carries a date; two places added the same day would collide and one would
+ * show the other's note/tags. `seq` (position among same-day places, in the
+ * canonical getPlaces() order) is folded into the seconds: 12:00:00, 12:00:01…
  */
-export function placeStartDateLocal(place: Place): string {
+export function placeStartDateLocal(place: Place, seq = 0): string {
   const date =
     place.added && /^\d{4}-\d{2}-\d{2}$/.test(place.added)
       ? place.added
       : FALLBACK_DATE;
-  return `${date} 12:00:00`;
+  const s = Math.min(seq, 59);
+  const m = Math.min(Math.floor(seq / 60), 59);
+  return `${date} 12:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+/** Same-day sequence number for every place, keyed by placeKey. */
+export function sameDaySeq(places: readonly Place[]): Map<Place, number> {
+  const seen = new Map<string, number>();
+  const out = new Map<Place, number>();
+  for (const p of places) {
+    const d = p.added ?? FALLBACK_DATE;
+    const n = seen.get(d) ?? 0;
+    out.set(p, n);
+    seen.set(d, n + 1);
+  }
+  return out;
 }
 
 /**
@@ -81,8 +99,8 @@ export function placeSummaryPolyline(place: Place): string {
   ]);
 }
 
-export function placeToActivity(place: Place, index: number): Activity {
-  const local = placeStartDateLocal(place);
+export function placeToActivity(place: Place, index: number, seq = 0): Activity {
+  const local = placeStartDateLocal(place, seq);
   return {
     run_id: index + 1,
     name: place.name,
@@ -110,6 +128,10 @@ export function getPlaces(): Place[] {
 let cache: Activity[] | null = null;
 
 export function getActivityData(): Activity[] {
-  cache ??= getPlaces().map(placeToActivity);
+  if (!cache) {
+    const places = getPlaces();
+    const seq = sameDaySeq(places);
+    cache = places.map((p, i) => placeToActivity(p, i, seq.get(p) ?? 0));
+  }
   return cache;
 }

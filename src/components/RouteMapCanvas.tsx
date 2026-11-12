@@ -4,6 +4,8 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import * as polyline from '@mapbox/polyline';
 import type { Activity } from '../types';
 import { useLocale } from '../hooks/useLocale';
+import { getCachedAnnotations } from '../core/annotations';
+import { parseLocation } from '../core/placesAsActivities';
 import './RouteMap.css';
 
 export interface RouteMapProps {
@@ -12,6 +14,8 @@ export interface RouteMapProps {
   selectedActivity?: Activity | null;
   dark?: boolean;
   onClearSelection?: () => void;
+  /** Clicking a dot selects that place (same as clicking its tile/row). */
+  onSelectActivity?: (a: Activity) => void;
 }
 
 // Token-free CARTO vector basemaps (MapLibre). running_page needed a Mapbox
@@ -39,6 +43,50 @@ function pointOf(activity: Activity): [number, number] | null {
   }
 }
 
+function esc(v: string): string {
+  return v
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
+ * Popup body: the same fields as the detail cards on the Place Wall (date,
+ * link, name, where, note, tags), so hovering a dot answers "what is this?"
+ * without leaving the map.
+ */
+function popupHtml(a: Activity, zh: boolean): string {
+  const ann = getCachedAnnotations()?.[a.start_date_local];
+  const loc = parseLocation(a.location_country);
+  const where = [loc.country, loc.province, loc.city]
+    .filter((v): v is string => Boolean(v))
+    .filter((v, i, arr) => arr.indexOf(v) === i)
+    .join(' · ');
+  const date = a.start_date_local.slice(0, 10);
+  const L = (k: string) => `<div class="place-popup-label">${k}</div>`;
+  const rows: string[] = [];
+  rows.push(`<div class="place-popup-name">${esc(a.name)}</div>`);
+  if (where) rows.push(L(zh ? '位置' : 'WHERE') + `<div>${esc(where)}</div>`);
+  if (ann?.note) rows.push(L(zh ? '备注' : 'NOTE') + `<div>${esc(ann.note)}</div>`);
+  if (ann?.tags?.length) {
+    rows.push(
+      L(zh ? '标签' : 'TAGS') +
+        `<div class="place-popup-tags">${ann.tags
+          .map((t) => `<span>${esc(t)}</span>`)
+          .join('')}</div>`
+    );
+  }
+  rows.push(L(zh ? '日期' : 'DATE') + `<div class="font-mono">${esc(date)}</div>`);
+  if (ann?.link) {
+    rows.push(
+      L(zh ? '链接' : 'LINK') +
+        `<a class="place-popup-link" href="${esc(ann.link)}" target="_blank" rel="noreferrer noopener">${esc(ann.link)}</a>`
+    );
+  }
+  return `<div class="place-popup">${rows.join('')}</div>`;
+}
+
 function accentColor(): string {
   const value = getComputedStyle(document.documentElement)
     .getPropertyValue('--color-accent')
@@ -51,6 +99,7 @@ export function RouteMapCanvas({
   selectedActivity,
   dark,
   onClearSelection,
+  onSelectActivity,
 }: RouteMapProps) {
   const { locale } = useLocale();
   const zh = locale === 'zh';
@@ -60,6 +109,11 @@ export function RouteMapCanvas({
   const styleReadyRef = useRef(false);
   const cameraRef = useRef<maplibregl.CameraOptions | null>(null);
   const fittedRef = useRef<unknown>(null);
+  const popupRef = useRef<maplibregl.Popup | null>(null);
+  const pinnedRef = useRef<number | null>(null);
+  const pointsRef = useRef<{ activity: Activity; lngLat: [number, number] }[]>([]);
+  const zhRef = useRef(false);
+  const onSelectRef = useRef<RouteMapProps['onSelectActivity']>(undefined);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(
     'loading'
   );
@@ -77,6 +131,10 @@ export function RouteMapCanvas({
     [activities]
   );
 
+  pointsRef.current = points;
+  zhRef.current = zh;
+  onSelectRef.current = onSelectActivity;
+
   const featureData = useMemo(
     () => ({
       type: 'FeatureCollection' as const,
@@ -85,6 +143,7 @@ export function RouteMapCanvas({
         properties: {
           selected: activity.run_id === selectedId,
           name: activity.name,
+          run_id: activity.run_id,
         },
         geometry: { type: 'Point' as const, coordinates: lngLat },
       })),
@@ -139,6 +198,16 @@ export function RouteMapCanvas({
       });
     }
     map.setPaintProperty('place-circles', 'circle-color', circleColor());
+    const popup = popupRef.current;
+    if (popup && pinnedRef.current !== null) {
+      const hit = points.find((p) => p.activity.run_id === pinnedRef.current);
+      if (hit) {
+        popup.setLngLat(hit.lngLat).setHTML(popupHtml(hit.activity, zhRef.current));
+        if (!popup.isOpen()) popup.addTo(map);
+      } else {
+        popup.remove();
+      }
+    }
     if (fittedRef.current !== featureData) {
       fittedRef.current = featureData;
       const selected = points.find((p) => p.activity.run_id === selectedId);
@@ -179,10 +248,67 @@ export function RouteMapCanvas({
       new maplibregl.ScaleControl({ unit: 'metric', maxWidth: 90 }),
       'bottom-left'
     );
+    const popup = new maplibregl.Popup({
+      closeButton: true,
+      closeOnClick: false,
+      maxWidth: '280px',
+      offset: 10,
+      className: 'place-popup-wrap',
+    });
+    popupRef.current = popup;
+    popup.on('close', () => {
+      pinnedRef.current = null;
+    });
+    const byId = (id: unknown) =>
+      pointsRef.current.find((p) => p.activity.run_id === Number(id));
+    const show = (feature: maplibregl.MapGeoJSONFeature) => {
+      const hit = byId(feature.properties?.run_id);
+      if (!hit) return;
+      popup.setLngLat(hit.lngLat).setHTML(popupHtml(hit.activity, zhRef.current));
+      // addTo() internally remove()s first, which fires 'close' and would
+      // clear the pin — only attach when not already on the map.
+      if (!popup.isOpen()) popup.addTo(map);
+    };
+    const onEnter = (e: maplibregl.MapLayerMouseEvent) => {
+      map.getCanvas().style.cursor = 'pointer';
+      if (pinnedRef.current !== null) return; // keep the pinned one
+      const f = e.features?.[0];
+      if (f) show(f);
+    };
+    const onLeave = () => {
+      map.getCanvas().style.cursor = '';
+      if (pinnedRef.current === null) popup.remove();
+    };
+    const onClick = (e: maplibregl.MapLayerMouseEvent) => {
+      const f = e.features?.[0];
+      if (!f) return;
+      const hit = byId(f.properties?.run_id);
+      if (!hit) return;
+      clickedDot = true;
+      pinnedRef.current = hit.activity.run_id;
+      show(f);
+      onSelectRef.current?.(hit.activity);
+    };
+    let clickedDot = false;
+    const onMapClick = (e: maplibregl.MapMouseEvent) => {
+      // click on empty map: unpin. The layer handler above runs first and
+      // flags dot clicks, so we do not re-query features here (the source may
+      // be mid-update after selection and return nothing).
+      if (clickedDot) {
+        clickedDot = false;
+        return;
+      }
+      void e;
+      if (pinnedRef.current !== null) popup.remove();
+    };
     const onStyleLoad = () => {
       styleReadyRef.current = true;
       fittedRef.current = null;
       draw();
+      map.on('mouseenter', 'place-circles', onEnter);
+      map.on('mouseleave', 'place-circles', onLeave);
+      map.on('click', 'place-circles', onClick);
+      map.on('click', onMapClick);
     };
     const onIdle = () => setStatus('ready');
     const onError = () => setStatus('error');
@@ -202,6 +328,9 @@ export function RouteMapCanvas({
       map.off('style.load', onStyleLoad);
       map.off('idle', onIdle);
       map.off('error', onError);
+      popup.remove();
+      popupRef.current = null;
+      pinnedRef.current = null;
       map.remove();
       mapRef.current = null;
     };

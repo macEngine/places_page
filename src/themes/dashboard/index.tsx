@@ -215,6 +215,7 @@ function Dashboard() {
                     selectedActivity={selectedActivity}
                     dark={dark}
                     onClearSelection={() => setSelectedActivity(null)}
+                    onSelectActivity={selectActivity}
                   />
                 </div>
                 <PersonalBest

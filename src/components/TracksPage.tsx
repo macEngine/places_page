@@ -402,6 +402,10 @@ export function TracksPage({
               setSelectedActivity(null);
               onSelectActivity?.(null);
             }}
+            onSelectActivity={(a) => {
+              setSelectedActivity(a);
+              onSelectActivity?.(a);
+            }}
           />
         </div>
 
