@@ -71,5 +71,42 @@
       },
       "note": "coords from POI detail API (search URL center was ~1km off)"
     }
+  },
+  {
+    "name": "北京河南大厦",
+    "wgs84": [
+      116.45162,
+      39.871927
+    ],
+    "gcj02": [
+      116.457789,
+      39.873277
+    ],
+    "bd09": [
+      116.464426,
+      39.878936
+    ],
+    "zoom": 14.94,
+    "country": "中国",
+    "province": "北京",
+    "city": "北京",
+    "tags": [
+      "北京",
+      "驻京办"
+    ],
+    "link": "https://my.feishu.cn/docx/F3XkdIZ5noL9VZxgla7ctkH0nph",
+    "desc": "河南省驻京办，潘家园华威里28号",
+    "added": "2026-11-12",
+    "_source": {
+      "provider": "baidu",
+      "projection": "bd09mc",
+      "poi_uid": "b533ea4af2798d584f6d460b",
+      "coord_origin": "baidu_poi_api",
+      "raw": "https://map.baidu.com/search/%E5%8C%97%E4%BA%AC%E6%B2%B3%E5%8D%97%E5%A4%A7%E5%8E%A6/@12965090.678325163,4820399.142213154,14.94z?querytype=s&da_src=shareurl&wd=%E5%8C%97%E4%BA%AC%E6%B2%B3%E5%8D%97%E5%A4%A7%E5%8E%A6&c=131&src=0&wd2=%E5%8C%97%E4%BA%AC%E5%B8%82%E6%9C%9D%E9%98%B3%E5%8C%BA&pn=0&sug=1&l=15&b=(12951650.82040579,4825984.036367412;12958873.995484682,4829939.5846249005)&from=webmap&biz_forward=%7B%22scaler%22:2,%22styles%22:%22pl%22%7D&sug_forward=b533ea4af2798d584f6d460b&device_ratio=1",
+      "offset_from_wgs84_m": {
+        "bd09": 1342.2,
+        "gcj02": 547.4
+      }
+    }
   }
 ]
