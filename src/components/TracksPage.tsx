@@ -49,21 +49,23 @@ const TrackThumb = memo(function TrackThumb({
   selected: boolean;
   onClick: (activity: Activity) => void;
 }) {
-  const size = 80;
+  // Square tile: a circle wastes its corners and forced 9px text. 120px
+  // square with 13px text keeps 3-4 lines of a Chinese shop name legible.
+  const size = 120;
   return (
     <button
       type="button"
       aria-pressed={selected}
       aria-label={activity.name}
-      className={`track-thumb group relative cursor-pointer rounded-full transition-all ${selected ? 'ring-2 ring-[var(--color-accent)] ring-offset-1 ring-offset-[var(--color-bg)]' : ''}`}
+      className={`track-thumb group relative cursor-pointer rounded-lg transition-all ${selected ? 'ring-2 ring-[var(--color-accent)] ring-offset-1 ring-offset-[var(--color-bg)]' : ''}`}
       onClick={() => onClick(activity)}
       title={note ? `${activity.name} — ${note}` : activity.name}
     >
       <span
         style={{ width: size, height: size, backgroundColor: PLACE_COLOR }}
-        className={`flex items-center justify-center rounded-full p-1.5 text-center text-[9px] leading-tight font-medium text-white transition-opacity ${selected ? 'opacity-100' : 'opacity-80 group-hover:opacity-100'}`}
+        className={`flex items-center justify-center rounded-lg p-2.5 text-center text-[13px] leading-snug font-semibold text-white transition-opacity ${selected ? 'opacity-100' : 'opacity-85 group-hover:opacity-100'}`}
       >
-        <span className="line-clamp-3">{activity.name}</span>
+        <span className="line-clamp-4 break-all">{activity.name}</span>
       </span>
     </button>
   );
@@ -659,7 +661,7 @@ export function TracksPage({
                 {trackPlaceholders.map((placeholder) => (
                   <div
                     key={placeholder.id}
-                    className="h-[80px] w-[80px] animate-pulse rounded-full bg-[var(--color-border)]"
+                    className="h-[120px] w-[120px] animate-pulse rounded-lg bg-[var(--color-border)]"
                     style={{ animationDelay: `${placeholder.delay}ms` }}
                   />
                 ))}
