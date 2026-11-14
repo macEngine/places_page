@@ -3,6 +3,7 @@ import polyline from '@mapbox/polyline';
 import { type Place } from './places';
 import {
   getActivityData,
+  getPlaces,
   normalizeProvince,
   placeStartDateLocal,
   sameDaySeq,
@@ -105,13 +106,24 @@ describe('placeToActivity', () => {
 });
 
 describe('annotations from places', () => {
-  it('keys tags / note / link by start_date_local', () => {
+  it('keys tags / note / link by start_date_local, for every place', () => {
+    // Behavioural check against the live data file, not a literal snapshot:
+    // each activity's key must resolve to its own place's tags/note/link.
     const map = getCachedAnnotations() ?? {};
-    const entry = map['2026-11-11 12:00:00'];
-    expect(entry).toBeDefined();
-    expect(entry.tags).toEqual(['美食', '港式']);
-    expect(entry.note).toBe('港式茶餐厅，北京首店');
-    // places.json link is null → dropped
-    expect(entry.link).toBeUndefined();
+    const places = getPlaces();
+    const acts = getActivityData();
+    expect(acts).toHaveLength(places.length);
+    acts.forEach((a, i) => {
+      const place = places[i];
+      const entry = map[a.start_date_local];
+      if (place.tags.length === 0 && !place.desc && !place.link) {
+        expect(entry).toBeUndefined();
+        return;
+      }
+      expect(entry).toBeDefined();
+      expect(entry.tags).toEqual(place.tags);
+      expect(entry.note).toBe(place.desc ?? '');
+      expect(entry.link).toBe(place.link ?? undefined);
+    });
   });
 });
