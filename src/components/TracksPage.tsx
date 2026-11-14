@@ -64,12 +64,10 @@ function TilePopover({
 
 const TrackThumb = memo(function TrackThumb({
   activity,
-  note,
   selected,
   onClick,
 }: {
   activity: Activity;
-  note?: string;
   selected: boolean;
   onClick: (activity: Activity) => void;
 }) {
@@ -83,7 +81,6 @@ const TrackThumb = memo(function TrackThumb({
       aria-label={activity.name}
       className={`track-thumb group relative cursor-pointer rounded-lg transition-all ${selected ? 'ring-2 ring-[var(--color-accent)] ring-offset-1 ring-offset-[var(--color-bg)]' : ''}`}
       onClick={() => onClick(activity)}
-      title={note ? `${activity.name} — ${note}` : activity.name}
     >
       <span
         style={{ width: size, height: size, backgroundColor: PLACE_COLOR }}
@@ -716,7 +713,6 @@ export function TracksPage({
                     />
                     <TrackThumb
                       activity={a}
-                      note={annotations[a.start_date_local]?.note}
                       selected={selectedActivity?.run_id === a.run_id}
                       onClick={handleSelectTrack}
                     />
