@@ -5,6 +5,7 @@ import type { Activity } from '../types';
 import { getAvailableYears } from '../hooks/useActivities';
 import { useLocale } from '../hooks/useLocale';
 import { useAnnotations } from '../core/hooks/useAnnotations';
+import { popupHtml } from '../core/placePopup';
 import {
   collectTags,
   matchesAnnotation,
@@ -37,6 +38,29 @@ function whereLabel(loc: string | null): string {
 }
 
 const PLACE_COLOR = '#f97316';
+
+/**
+ * Hover card for a wall tile: the same content as the map popup. Shown on
+ * hover/focus; clicking the tile selects the place, which keeps it open.
+ */
+function TilePopover({
+  activity,
+  zh,
+  open,
+}: {
+  activity: Activity;
+  zh: boolean;
+  open: boolean;
+}) {
+  if (!open) return null;
+  return (
+    <div
+      role="tooltip"
+      className="tile-popover"
+      dangerouslySetInnerHTML={{ __html: popupHtml(activity, zh) }}
+    />
+  );
+}
 
 const TrackThumb = memo(function TrackThumb({
   activity,
@@ -84,6 +108,7 @@ export function TracksPage({
   const [query, setQuery] = useState('');
   const [activeTags, setActiveTags] = useState<string[]>([]);
   const annotations = useAnnotations();
+  const [hoverId, setHoverId] = useState<number | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
     null
   );
@@ -673,7 +698,22 @@ export function TracksPage({
             ) : (
               <div className="flex flex-wrap gap-1">
                 {sortedTracks.map(({ representative: a, count }) => (
-                  <div key={a.run_id} className="track-cell relative">
+                  <div
+                    key={a.run_id}
+                    className="track-cell relative"
+                    onMouseEnter={() => setHoverId(a.run_id)}
+                    onMouseLeave={() => setHoverId(null)}
+                    onFocus={() => setHoverId(a.run_id)}
+                    onBlur={() => setHoverId(null)}
+                  >
+                    <TilePopover
+                      activity={a}
+                      zh={locale === 'zh'}
+                      open={
+                        hoverId === a.run_id ||
+                        selectedActivity?.run_id === a.run_id
+                      }
+                    />
                     <TrackThumb
                       activity={a}
                       note={annotations[a.start_date_local]?.note}

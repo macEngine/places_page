@@ -112,9 +112,5 @@ body {
 
 /* Skip offscreen SVG paint/layout, but include every route in image exports. */
 .dashboard .track-cell {
-  content-visibility: auto;
-  contain-intrinsic-size: 120px 120px;
-}
-.dashboard .exporting .track-cell {
-  content-visibility: visible;
+  /* no content-visibility: it would clip the hover popover */
 }
