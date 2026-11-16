@@ -110,5 +110,46 @@
         "gcj02": 547.4
       }
     }
+  },
+  {
+    "name": "慈寿寺",
+    "wgs84": [
+      116.289219,
+      39.926838
+    ],
+    "gcj02": [
+      116.295277,
+      39.928083
+    ],
+    "bd09": [
+      116.301674,
+      39.934321
+    ],
+    "zoom": 19.0,
+    "country": "中国",
+    "province": "北京",
+    "city": "北京",
+    "tags": [
+      "北京",
+      "慈寿寺",
+      "钓鱼台",
+      "银杏大道",
+      "rick",
+      "古迹"
+    ],
+    "link": "https://blogimg.niuge6.com/i/5384475876750.png",
+    "desc": "Rick 朋友圈：钓鱼台银杏大道深秋银杏，人太多；fred 说旁边一点的慈寿寺也不错",
+    "added": "2026-11-16",
+    "_source": {
+      "provider": "baidu",
+      "projection": "bd09mc",
+      "poi_uid": "785eb8b5b60030a549fd3f96",
+      "coord_origin": "baidu_poi_api",
+      "raw": "https://map.baidu.com/search/%E6%85%88%E5%AF%BF%E5%AF%BA/@12946759.095,4828717.24,19z?querytype=s&da_src=shareurl&wd=%E6%85%88%E5%AF%BF%E5%AF%BA&c=131&src=0&wd2=%E5%8C%97%E4%BA%AC%E5%B8%82%E6%B5%B7%E6%B7%80%E5%8C%BA&pn=0&sug=1&l=15&b=(12954968,4825139;12975448,4832571)&from=webmap&biz_forward=%7B%22scaler%22:1,%22styles%22:%22pl%22%7D&sug_forward=785eb8b5b60030a549fd3f96&device_ratio=1",
+      "offset_from_wgs84_m": {
+        "bd09": 1349.2,
+        "gcj02": 534.8
+      }
+    }
   }
 ]
