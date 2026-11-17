@@ -8,6 +8,7 @@ import { useAnnotations } from '../core/hooks/useAnnotations';
 import { popupHtml } from '../core/placePopup';
 import {
   collectTags,
+  isImageLink,
   matchesAnnotation,
   parseQuery,
 } from '../core/annotations';
@@ -187,6 +188,7 @@ export function TracksPage({
   const focusedLink = focusedActivity
     ? (annotations[focusedActivity.start_date_local]?.link ?? '')
     : '';
+  const focusedLinkIsImage = isImageLink(focusedLink);
 
   // Cluster places by proximity — defer heavy work to a worker.
   type Cluster = { representative: Activity; count: number };
@@ -318,9 +320,27 @@ export function TracksPage({
               {focusedDate || '\u00a0'}
             </p>
             <p className="mt-3 text-[10px] tracking-wider text-[var(--color-muted)] uppercase">
-              {locale === 'zh' ? '链接' : 'Link'}
+              {focusedLinkIsImage
+                ? locale === 'zh' ? '图片' : 'Image'
+                : locale === 'zh' ? '链接' : 'Link'}
             </p>
-            {focusedLink ? (
+            {focusedLinkIsImage ? (
+              // Image link: render it in the card; click opens the full-size file.
+              <a
+                href={focusedLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 block cursor-zoom-in overflow-hidden rounded-lg border border-[var(--color-border)]"
+                title={locale === 'zh' ? '点击查看原图' : 'Open full size'}
+              >
+                <img
+                  src={focusedLink}
+                  alt=""
+                  loading="lazy"
+                  className="block max-h-56 w-full object-cover"
+                />
+              </a>
+            ) : focusedLink ? (
               <a
                 href={focusedLink}
                 target="_blank"

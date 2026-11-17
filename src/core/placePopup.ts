@@ -4,7 +4,7 @@
  * name / where / note / tags / date / link. All values are escaped.
  */
 import type { Activity } from './types';
-import { getCachedAnnotations } from './annotations';
+import { getCachedAnnotations, isImageLink } from './annotations';
 import { parseLocation } from './placesAsActivities';
 
 function esc(v: string): string {
@@ -43,9 +43,14 @@ export function popupHtml(a: Activity, zh: boolean): string {
   }
   rows.push(L(zh ? '日期' : 'DATE') + `<div class="font-mono">${esc(date)}</div>`);
   if (ann?.link) {
+    const href = esc(ann.link);
     rows.push(
-      L(zh ? '链接' : 'LINK') +
-        `<a class="place-popup-link" href="${esc(ann.link)}" target="_blank" rel="noreferrer noopener">${esc(ann.link)}</a>`
+      isImageLink(ann.link)
+        ? // Image link: show it inline; click opens the full-size file.
+          L(zh ? '图片' : 'IMAGE') +
+            `<a class="place-popup-img" href="${href}" target="_blank" rel="noreferrer noopener" title="${esc(zh ? '点击查看原图' : 'Open full size')}"><img src="${href}" alt="" loading="lazy" /></a>`
+        : L(zh ? '链接' : 'LINK') +
+            `<a class="place-popup-link" href="${href}" target="_blank" rel="noreferrer noopener">${href}</a>`
     );
   }
   return `<div class="place-popup">${rows.join('')}</div>`;

@@ -148,6 +148,21 @@
   max-width: 240px;
 }
 
+.place-popup-img {
+  display: block;
+  margin-top: 4px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  cursor: zoom-in;
+}
+.place-popup-img img {
+  display: block;
+  width: 100%;
+  max-height: 170px;
+  object-fit: cover;
+}
+
 /* ---- wall tile popover (same body as the map popup) ---- */
 .tile-popover {
   position: absolute;

@@ -9,6 +9,7 @@ import {
   visibleLevels,
 } from './search';
 import rawPlaces from '@/data/places.json';
+import { isImageLink } from './annotations';
 
 const P = (over: Partial<Place> & { name: string }): Place => ({
   wgs84: [116.4, 39.9],
@@ -108,5 +109,17 @@ describe('search', () => {
     ]);
     // Foreign place without a province: province row hidden, city shown.
     expect(visibleLevels([tokyo])).toEqual(['country', 'city']);
+  });
+});
+
+describe('isImageLink', () => {
+  it('detects image files by extension, ignoring query strings', () => {
+    expect(isImageLink('https://blogimg.niuge6.com/i/5384475876750.png')).toBe(true);
+    expect(isImageLink('https://x.test/a/b.JPG?w=800')).toBe(true);
+    expect(isImageLink('https://x.test/photo.webp')).toBe(true);
+    expect(isImageLink('https://my.feishu.cn/docx/F3XkdIZ5noL9VZxgla7ctkH0nph')).toBe(false);
+    expect(isImageLink('https://x.test/page.png.html')).toBe(false);
+    expect(isImageLink('')).toBe(false);
+    expect(isImageLink('not a url.png')).toBe(false);
   });
 });

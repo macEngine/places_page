@@ -36,6 +36,19 @@ export function sanitizeLink(value: unknown): string {
   }
 }
 
+/**
+ * True when a link points straight at an image file (by extension, query string
+ * ignored). Such links render as a thumbnail instead of a bare URL.
+ */
+export function isImageLink(link: string): boolean {
+  if (!link) return false;
+  try {
+    return /\.(png|jpe?g|gif|webp|avif)$/i.test(new URL(link).pathname);
+  } catch {
+    return false;
+  }
+}
+
 function build(): AnnotationMap {
   const out: AnnotationMap = {};
   const places = getPlaces();
