@@ -181,7 +181,10 @@
   pointer-events: none;
   text-align: left;
 }
-.tile-popover .place-popup-link {
+/* The popover itself lets the mouse pass through (so hover-through to the
+   next tile works); only its clickable parts take pointer events back. */
+.tile-popover .place-popup-link,
+.tile-popover .place-popup-img {
   pointer-events: auto;
 }
 .tile-popover::after {
