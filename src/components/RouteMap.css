@@ -130,12 +130,30 @@
   gap: 4px;
   margin-top: 2px;
 }
-.place-popup-tags span {
+.place-popup-tags span,
+.place-popup-tag {
   border: 1px solid var(--color-border);
   border-radius: 999px;
   padding: 0 7px;
   font-size: 11px;
   color: var(--color-muted);
+}
+/* Clickable tag (pages with a tag filter): looks like the pill row above. */
+.place-popup-tag {
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.6;
+  cursor: pointer;
+}
+.place-popup-tag:hover {
+  color: var(--color-text);
+  border-color: var(--color-text);
+}
+.place-popup-tag[aria-pressed='true'] {
+  background: var(--color-accent);
+  border-color: transparent;
+  color: var(--color-on-accent);
 }
 .place-popup-link {
   display: block;
@@ -184,7 +202,8 @@
 /* The popover itself lets the mouse pass through (so hover-through to the
    next tile works); only its clickable parts take pointer events back. */
 .tile-popover .place-popup-link,
-.tile-popover .place-popup-img {
+.tile-popover .place-popup-img,
+.tile-popover .place-popup-tag {
   pointer-events: auto;
 }
 .tile-popover::after {

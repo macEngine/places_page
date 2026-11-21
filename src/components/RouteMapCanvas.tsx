@@ -4,7 +4,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import * as polyline from '@mapbox/polyline';
 import type { Activity } from '../types';
 import { useLocale } from '../hooks/useLocale';
-import { popupHtml } from '../core/placePopup';
+import { popupHtml, tagFromClick } from '../core/placePopup';
 import './RouteMap.css';
 
 export interface RouteMapProps {
@@ -15,6 +15,11 @@ export interface RouteMapProps {
   onClearSelection?: () => void;
   /** Clicking a dot selects that place (same as clicking its tile/row). */
   onSelectActivity?: (a: Activity) => void;
+  /**
+   * Clicking a tag inside the popup. When set, popup tags render as buttons;
+   * when unset (home page, no tag filter there) they stay plain text.
+   */
+  onTagClick?: (tag: string) => void;
 }
 
 // Token-free CARTO vector basemaps (MapLibre). running_page needed a Mapbox
@@ -55,6 +60,7 @@ export function RouteMapCanvas({
   dark,
   onClearSelection,
   onSelectActivity,
+  onTagClick,
 }: RouteMapProps) {
   const { locale } = useLocale();
   const zh = locale === 'zh';
@@ -69,6 +75,7 @@ export function RouteMapCanvas({
   const pointsRef = useRef<{ activity: Activity; lngLat: [number, number] }[]>([]);
   const zhRef = useRef(false);
   const onSelectRef = useRef<RouteMapProps['onSelectActivity']>(undefined);
+  const onTagClickRef = useRef<RouteMapProps['onTagClick']>(undefined);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(
     'loading'
   );
@@ -89,6 +96,7 @@ export function RouteMapCanvas({
   pointsRef.current = points;
   zhRef.current = zh;
   onSelectRef.current = onSelectActivity;
+  onTagClickRef.current = onTagClick;
 
   const featureData = useMemo(
     () => ({
@@ -157,7 +165,13 @@ export function RouteMapCanvas({
     if (popup && pinnedRef.current !== null) {
       const hit = points.find((p) => p.activity.run_id === pinnedRef.current);
       if (hit) {
-        popup.setLngLat(hit.lngLat).setHTML(popupHtml(hit.activity, zhRef.current));
+        popup
+          .setLngLat(hit.lngLat)
+          .setHTML(
+            popupHtml(hit.activity, zhRef.current, {
+              clickableTags: Boolean(onTagClickRef.current),
+            })
+          );
         if (!popup.isOpen()) popup.addTo(map);
       } else {
         popup.remove();
@@ -214,12 +228,28 @@ export function RouteMapCanvas({
     popup.on('close', () => {
       pinnedRef.current = null;
     });
+    // Tag buttons inside the popup. MapLibre builds a fresh container on
+    // every open, so listen per 'open' and no listener is ever duplicated.
+    popup.on('open', () => {
+      popup.getElement()?.addEventListener('click', (e) => {
+        const tag = tagFromClick(e.target);
+        if (!tag) return;
+        e.stopPropagation();
+        onTagClickRef.current?.(tag);
+      });
+    });
     const byId = (id: unknown) =>
       pointsRef.current.find((p) => p.activity.run_id === Number(id));
     const show = (feature: maplibregl.MapGeoJSONFeature) => {
       const hit = byId(feature.properties?.run_id);
       if (!hit) return;
-      popup.setLngLat(hit.lngLat).setHTML(popupHtml(hit.activity, zhRef.current));
+      popup
+          .setLngLat(hit.lngLat)
+          .setHTML(
+            popupHtml(hit.activity, zhRef.current, {
+              clickableTags: Boolean(onTagClickRef.current),
+            })
+          );
       // addTo() internally remove()s first, which fires 'close' and would
       // clear the pin — only attach when not already on the map.
       if (!popup.isOpen()) popup.addTo(map);

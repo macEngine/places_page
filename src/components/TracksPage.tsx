@@ -5,7 +5,7 @@ import type { Activity } from '../types';
 import { getAvailableYears } from '../hooks/useActivities';
 import { useLocale } from '../hooks/useLocale';
 import { useAnnotations } from '../core/hooks/useAnnotations';
-import { popupHtml } from '../core/placePopup';
+import { popupHtml, tagFromClick } from '../core/placePopup';
 import {
   collectTags,
   isImageLink,
@@ -48,17 +48,27 @@ function TilePopover({
   activity,
   zh,
   open,
+  activeTags,
+  onTagClick,
 }: {
   activity: Activity;
   zh: boolean;
   open: boolean;
+  activeTags: string[];
+  onTagClick: (tag: string) => void;
 }) {
   if (!open) return null;
   return (
     <div
       role="tooltip"
       className="tile-popover"
-      dangerouslySetInnerHTML={{ __html: popupHtml(activity, zh) }}
+      onClick={(e) => {
+        const tag = tagFromClick(e.target);
+        if (tag) onTagClick(tag);
+      }}
+      dangerouslySetInnerHTML={{
+        __html: popupHtml(activity, zh, { clickableTags: true, activeTags }),
+      }}
     />
   );
 }
@@ -118,6 +128,17 @@ export function TracksPage({
   const [exportMessage, setExportMessage] = useState('');
   const [exportUrl, setExportUrl] = useState('');
   const previewRef = useRef<HTMLDivElement>(null);
+
+  // Tag clicked inside a popup / the Selected card: toggle it as a filter,
+  // like the pill row, but keep the current selection — the place carries
+  // that tag, so it stays visible, and the user is looking at it right now.
+  const toggleTag = useCallback((tag: string) => {
+    setActiveTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+    setExportUrl('');
+    setExportMessage('');
+  }, []);
 
   // Year pagination
   const MAX_YEARS = 10;
@@ -422,14 +443,21 @@ export function TracksPage({
                       {locale === 'zh' ? '标签' : 'Tags'}
                     </dt>
                     <dd className="mt-1 flex flex-wrap gap-1">
-                      {selectedTags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-full bg-[var(--color-border)] px-2 py-0.5 text-xs text-[var(--color-muted)]"
-                        >
-                          {tag}
-                        </span>
-                      ))}
+                      {selectedTags.map((tag) => {
+                        const on = activeTags.includes(tag);
+                        return (
+                          <button
+                            key={tag}
+                            type="button"
+                            aria-pressed={on}
+                            title={locale === 'zh' ? '按此标签筛选' : 'Filter by this tag'}
+                            onClick={() => toggleTag(tag)}
+                            className={`rounded-full px-2 py-0.5 text-xs ${on ? 'bg-[var(--color-accent)] text-[var(--color-on-accent)]' : 'bg-[var(--color-border)] text-[var(--color-muted)] hover:text-[var(--color-text)]'}`}
+                          >
+                            {tag}
+                          </button>
+                        );
+                      })}
                     </dd>
                   </div>
                 )}
@@ -450,6 +478,7 @@ export function TracksPage({
               setSelectedActivity(a);
               onSelectActivity?.(a);
             }}
+            onTagClick={toggleTag}
           />
         </div>
 
@@ -726,6 +755,8 @@ export function TracksPage({
                     <TilePopover
                       activity={a}
                       zh={locale === 'zh'}
+                      activeTags={activeTags}
+                      onTagClick={toggleTag}
                       open={
                         hoverId === a.run_id ||
                         selectedActivity?.run_id === a.run_id

@@ -20,7 +20,33 @@ function esc(v: string): string {
  * link, name, where, note, tags), so hovering a dot answers "what is this?"
  * without leaving the map.
  */
-export function popupHtml(a: Activity, zh: boolean): string {
+export interface PopupOptions {
+  /**
+   * Render tags as buttons (`.place-popup-tag[data-tag]`) so the host can
+   * turn a click into a tag filter via {@link tagFromClick}. Off by default:
+   * on pages with no tag filter the tags stay plain text.
+   */
+  clickableTags?: boolean;
+  /** Tags currently filtering the list; rendered with `aria-pressed`. */
+  activeTags?: readonly string[];
+}
+
+/**
+ * The tag a click inside a popup landed on, or null. Works for the React
+ * popover (synthetic event) and the MapLibre popup (native event) alike,
+ * because both end up as DOM clicks on `.place-popup-tag`.
+ */
+export function tagFromClick(target: EventTarget | null): string | null {
+  if (!(target instanceof Element)) return null;
+  const btn = target.closest('.place-popup-tag');
+  return btn?.getAttribute('data-tag') ?? null;
+}
+
+export function popupHtml(
+  a: Activity,
+  zh: boolean,
+  opts: PopupOptions = {}
+): string {
   const ann = getCachedAnnotations()?.[a.start_date_local];
   const loc = parseLocation(a.location_country);
   const where = [loc.country, loc.province, loc.city]
@@ -34,11 +60,16 @@ export function popupHtml(a: Activity, zh: boolean): string {
   if (where) rows.push(L(zh ? '位置' : 'WHERE') + `<div>${esc(where)}</div>`);
   if (ann?.note) rows.push(L(zh ? '备注' : 'NOTE') + `<div>${esc(ann.note)}</div>`);
   if (ann?.tags?.length) {
+    const tagTitle = esc(zh ? '按此标签筛选' : 'Filter by this tag');
+    const tag = (t: string) => {
+      const label = esc(t);
+      if (!opts.clickableTags) return `<span>${label}</span>`;
+      const on = opts.activeTags?.includes(t) ? 'true' : 'false';
+      return `<button type="button" class="place-popup-tag" data-tag="${label}" aria-pressed="${on}" title="${tagTitle}">${label}</button>`;
+    };
     rows.push(
       L(zh ? '标签' : 'TAGS') +
-        `<div class="place-popup-tags">${ann.tags
-          .map((t) => `<span>${esc(t)}</span>`)
-          .join('')}</div>`
+        `<div class="place-popup-tags">${ann.tags.map(tag).join('')}</div>`
     );
   }
   rows.push(L(zh ? '日期' : 'DATE') + `<div class="font-mono">${esc(date)}</div>`);
