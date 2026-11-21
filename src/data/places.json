@@ -151,5 +151,43 @@
         "gcj02": 534.8
       }
     }
+  },
+  {
+    "name": "唐宫·粤菜海鲜(丽都店)",
+    "wgs84": [
+      116.472775,
+      39.97706
+    ],
+    "gcj02": [
+      116.478891,
+      39.978363
+    ],
+    "bd09": [
+      116.485471,
+      39.984177
+    ],
+    "zoom": 19.0,
+    "country": "中国",
+    "province": "北京",
+    "city": "北京",
+    "tags": [
+      "北京",
+      "团建",
+      "朝阳区"
+    ],
+    "link": "https://github.com/macEngine/my2025/issues/104",
+    "desc": "团建聚餐，丽都皇冠假日酒店三层",
+    "added": "2026-11-20",
+    "_source": {
+      "provider": "baidu",
+      "projection": "bd09mc",
+      "poi_uid": "ea988bc590198b7c43ab9adb",
+      "coord_origin": "baidu_poi_api",
+      "raw": "https://map.baidu.com/search/%E5%94%90%E5%AE%AB%C2%B7%E7%B2%A4%E8%8F%9C%E6%B5%B7%E9%B2%9C(%E4%B8%BD%E9%83%BD%E5%BA%97)/@12967244.46,4835929.05,19z?querytype=s&da_src=shareurl&wd=%E5%94%90%E5%AE%AB%C2%B7%E7%B2%A4%E8%8F%9C%E6%B5%B7%E9%B2%9C(%E4%B8%BD%E9%83%BD%E5%BA%97)&c=131&src=0&pn=0&sug=1&l=19&from=webmap&sug_forward=ea988bc590198b7c43ab9adb&device_ratio=1",
+      "offset_from_wgs84_m": {
+        "bd09": 1340.4,
+        "gcj02": 540.9
+      }
+    }
   }
 ]
