@@ -176,7 +176,7 @@
       "朝阳区"
     ],
     "link": "https://github.com/macEngine/my2025/issues/104",
-    "desc": "团建聚餐，丽都皇冠假日酒店三层",
+    "desc": "团建中午场：在丽都皇冠假日酒店三层吃饭，饭后下午去木梓茶楼·棋牌室(望京店)打牌",
     "added": "2026-11-20",
     "_source": {
       "provider": "baidu",
@@ -187,6 +187,46 @@
       "offset_from_wgs84_m": {
         "bd09": 1340.4,
         "gcj02": 540.9
+      }
+    }
+  },
+  {
+    "name": "木梓茶楼·棋牌室(望京店)",
+    "wgs84": [
+      116.472,
+      39.996614
+    ],
+    "gcj02": [
+      116.478121,
+      39.99792
+    ],
+    "bd09": [
+      116.484708,
+      40.003723
+    ],
+    "zoom": 19.0,
+    "country": "中国",
+    "province": "北京",
+    "city": "北京",
+    "tags": [
+      "北京",
+      "团建",
+      "朝阳区",
+      "望京",
+      "棋牌"
+    ],
+    "link": "https://github.com/macEngine/my2025/issues/104",
+    "desc": "团建下午场：中午在唐宫·粤菜海鲜(丽都店)吃饭，饭后来这里打牌",
+    "added": "2026-11-20",
+    "_source": {
+      "provider": "baidu",
+      "projection": "bd09mc",
+      "poi_uid": "f186a73d86d0c73183a00c29",
+      "coord_origin": "baidu_poi_api",
+      "raw": "https://map.baidu.com/search/%E6%9C%A8%E6%A2%93%E8%8C%B6%E6%A5%BC%C2%B7%E6%A3%8B%E7%89%8C%E5%AE%A4(%E6%9C%9B%E4%BA%AC%E5%BA%97)/@12967134.625,4838757.88,19z?querytype=s&da_src=shareurl&wd=%E6%9C%A8%E6%A2%93%E8%8C%B6%E6%A5%BC%C2%B7%E6%A3%8B%E7%89%8C%E5%AE%A4(%E6%9C%9B%E4%BA%AC%E5%BA%97)&c=131&src=0&wd2=%E5%8C%97%E4%BA%AC%E5%B8%82%E6%9C%9D%E9%98%B3%E5%8C%BA&pn=0&sug=1&l=15&b=(12959800,4825947;12970616,4831763)&from=webmap&biz_forward=%7B%22scaler%22:2,%22styles%22:%22pl%22%7D&sug_forward=f186a73d86d0c73183a00c29&device_ratio=2",
+      "offset_from_wgs84_m": {
+        "bd09": 1340.4,
+        "gcj02": 541.3
       }
     }
   }
